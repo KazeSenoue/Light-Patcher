@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher", "Patcher\Patcher.csproj", "{0F3F8D75-9AAF-4767-B1CB-B779D9FA9157}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{3698CCC0-2B3B-452B-9133-9113F4C41223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnglishPatchInstaller", "EnglishPatchInstaller\EnglishPatchInstaller.csproj", "{B5BD5FD5-0F7A-4853-894E-C51C142D16B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +19,15 @@ Global
 		{0F3F8D75-9AAF-4767-B1CB-B779D9FA9157}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3F8D75-9AAF-4767-B1CB-B779D9FA9157}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3F8D75-9AAF-4767-B1CB-B779D9FA9157}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5BD5FD5-0F7A-4853-894E-C51C142D16B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5BD5FD5-0F7A-4853-894E-C51C142D16B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5BD5FD5-0F7A-4853-894E-C51C142D16B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5BD5FD5-0F7A-4853-894E-C51C142D16B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B5BD5FD5-0F7A-4853-894E-C51C142D16B4} = {3698CCC0-2B3B-452B-9133-9113F4C41223}
 	EndGlobalSection
 EndGlobal

@@ -26,24 +26,69 @@ namespace EnglishPatchInstaller
         public void DownloadPatch()
         {
             //Downloads patch using getPatchURL()
-            string patchURL = GetPatchURL();
-            string filename = Path.GetFileName(patchURL);
-            string directory = "patches";
+            var patchURL = GetPatchURL();
+            var filename = Path.GetFileName(patchURL);
 
-            Console.WriteLine("Downloading patch...");
+            Console.WriteLine("######################################");
+            Console.WriteLine("");
+            Console.WriteLine("Downloading english patch...\n");
             client.DownloadFile(patchURL, filename);
 
-            Console.WriteLine("Extracting patch...");
+            Console.WriteLine("Extracting patch...\n");
             ExtractPatch(filename);
         }
 
         public void ExtractPatch(string filename)
         {
-            string directory = "patch";
-            string command = string.Format("/C 7z.exe e {0} -o{1}", filename, directory);
+            var directory = "patch";
+            var command = string.Format("/C 7z.exe e {0} -o{1}", filename, directory);
 
             Directory.CreateDirectory(directory);
-            Process.Start("cmd.exe", command);
+            var process = Process.Start("cmd.exe", command);
+            process.WaitForExit();
+
+            Console.WriteLine("Extracted!\n");
+            InstallPatch();
+        }
+
+        public void InstallPatch()
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            var win32dir = arguments[1] + "\\data\\win32\\";
+
+            if (arguments.Length == 1)
+            {
+                Console.WriteLine("No arguments passed. Press any buttons to exit.");
+                Console.ReadKey();
+            }
+            else
+            {
+                var files = Directory.GetFiles("patch");
+
+                foreach (var file in files)
+                {
+                    Console.WriteLine("Installing english patch...\n");
+
+                    var filename = file.Replace("patch\\", "");
+                    var FileToReplace = win32dir + filename;
+
+                    try
+                    {
+                        File.Replace(file, FileToReplace, FileToReplace + ".bak");
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        Console.WriteLine("Your patcher is not in the same drive as your PSO2 installation.");
+                        Console.WriteLine("Press any button to exit...");
+                        Console.ReadKey();
+                        return;
+                    }
+
+
+                }
+                Console.WriteLine("English patch successfully installed!");
+                Console.ReadKey();
+            }
         }
     }
 }
