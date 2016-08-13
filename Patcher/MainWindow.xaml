@@ -7,6 +7,21 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        
+        <TabControl x:Name="tabControl" HorizontalAlignment="Left" Height="208" Margin="10,10,0,0" VerticalAlignment="Top" Width="497">
+            <TabItem Header="Main">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="102*"/>
+                        <ColumnDefinition Width="143*"/>
+                        <ColumnDefinition Width="246*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="button" Content="Select directory" Grid.Column="1" HorizontalAlignment="Left" Margin="48,54,0,0" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" Height="47" Click="button_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="TabItem">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+
     </Grid>
 </Window>
