@@ -23,36 +23,37 @@ namespace Patcher
     /// </summary>
     public partial class MainWindow : Window
     {
+        public void runHelper()
+        {
+            //Loads settings
+            Settings settings = new Settings().ReturnSettings();
+
+            if (settings.PSO2 == "")
+            {
+                MessageBox.Show("Hi there! This appears to be your first time running Meme Patcher." + 
+                    " Let's get you all set up, shall we? \nFirst, select your pso2_bin folder.", "Setup");
+                settings.SavePSO2Dir();
+            }
+            else if (!settings.PSO2.EndsWith("pso2_bin"))
+            {
+                MessageBox.Show("Your PSO2 directory seems to be invalid. Let's re-do the setup process.");
+                settings.SavePSO2Dir();
+            }
+        }
+
+
         public MainWindow()
         {
+            runHelper();
             InitializeComponent();
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void button_Click_1(object sender, RoutedEventArgs e)
         {
             //Loads settings
-            Settings set = new Settings();
-            Settings settings = set.ReturnSettings();
-
-            //Prompts user to select pso2_dir
-            var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            //If the folder is "pso2_bin", saves it to settings.json. If not, tells the user they fucked up.
-            var pso2_dir = dialog.FileName;
-            Console.WriteLine(pso2_dir);
-            if (pso2_dir.EndsWith("pso2_bin"))
-            {
-                settings.PSO2 = pso2_dir;
-                string output = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                File.WriteAllText("settings.json", output);
-                MessageBox.Show(String.Format("Saved!\nSelected folder: {0}", settings.PSO2));
-            }
-            else
-            {
-                MessageBox.Show(String.Format("{0} is not a valid PSO2 folder. Please try again.", pso2_dir));
-            }
+            Settings settings = new Settings().ReturnSettings();
+            var command = "/C " + settings.PSO2;
+            System.Diagnostics.Process.Start("EnglishPatchInstaller.exe", command);
         }
     }
 }

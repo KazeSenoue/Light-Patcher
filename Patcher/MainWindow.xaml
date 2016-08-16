@@ -5,9 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Patcher"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="526">
     <Grid>
-        <TabControl x:Name="tabControl" HorizontalAlignment="Left" Height="208" Margin="10,10,0,0" VerticalAlignment="Top" Width="497">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TabControl x:Name="tabControl" HorizontalAlignment="Left" Height="299" Margin="10,10,0,0" VerticalAlignment="Top" Width="497" Grid.ColumnSpan="2">
             <TabItem Header="Main">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
@@ -15,11 +19,29 @@
                         <ColumnDefinition Width="143*"/>
                         <ColumnDefinition Width="246*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="button" Content="Select directory" Grid.Column="1" HorizontalAlignment="Left" Margin="48,54,0,0" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" Height="47" Click="button_Click"/>
+                    <WebBrowser Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="251" Margin="10,10,0,0" VerticalAlignment="Top" Width="471" Source="http://bumped.org/psublog"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="TabItem">
-                <Grid Background="#FFE5E5E5"/>
+            <TabItem Header="Patches">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="11*"/>
+                        <ColumnDefinition Width="480*"/>
+                    </Grid.ColumnDefinitions>
+                    <GroupBox x:Name="groupBox" Header="GroupBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="251" Width="250">
+                        <Button x:Name="button" Content="Install English Patch" Margin="10,10,8,0" VerticalAlignment="Top" Click="button_Click_1"/>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Settings">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="11*"/>
+                        <ColumnDefinition Width="480*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label x:Name="label" Content="PSO2 Directory:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="textBox" Grid.Column="1" HorizontalAlignment="Left" Height="22" Margin="97,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                </Grid>
             </TabItem>
         </TabControl>
 
