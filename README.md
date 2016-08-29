@@ -4,6 +4,6 @@
   <i>"Tu fui, ego eris."</i>
 </p>
 
-# Dependencies
-1. A fucking brain
-2. A computer
+## Dependencies
+1. A computer
+2. Brain
