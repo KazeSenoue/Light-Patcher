@@ -19,7 +19,7 @@
                     </Grid.ColumnDefinitions>
                     <Button x:Name="button1" Content="Launch PSO2" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="144" Height="34" Click="button1_Click"/>
                     <WebBrowser HorizontalAlignment="Left" Height="201" Margin="10,60,0,0" VerticalAlignment="Top" Width="471" Source="http://kazesenoue.moe/uploads/drunk_isaac.gif"/>
-                    <Button x:Name="button2" Content="PSO2 Settings" HorizontalAlignment="Left" Margin="191,10,0,0" VerticalAlignment="Top" Width="125" Height="34" Click="button2_Click"/>
+                    <Button x:Name="button2" Content="Check for old / missing files" HorizontalAlignment="Left" Margin="288,10,0,0" VerticalAlignment="Top" Width="193" Height="34" Click="button2_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Patches">

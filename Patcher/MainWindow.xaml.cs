@@ -118,8 +118,8 @@ namespace Patcher
 
         private void button2_Click(object sender, RoutedEventArgs e)
         {
-            var PSO2Settings = new Window1();
-            PSO2Settings.Show();
+            var arguments = "/C \"{0}\" \"update\"";
+            Process.Start(@"Modules/Updater.exe", arguments);
         }
     }
 }
