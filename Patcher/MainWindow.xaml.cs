@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace Patcher
     /// </summary>
     public partial class MainWindow : Window
     {
-        public void runHelper()
+        public void RunHelper()
         {
             //Loads settings
             Settings settings = new Settings().ReturnSettings();
@@ -41,10 +43,46 @@ namespace Patcher
             }
         }
 
+        public void CheckForUpdates()
+        {
+            //Reads current version from Sega's servers
+            WebRequest request = WebRequest.Create("http://download.pso2.jp/patch_prod/patches/version.ver");
+            ((HttpWebRequest)request).UserAgent = "AQUA_HTTP";
+
+            WebResponse response = request.GetResponse();
+            Stream dataStream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(dataStream);
+            string serverVersion = reader.ReadToEnd();
+
+            reader.Close();
+            response.Close();
+
+            //Reads current stored version
+            try
+            {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                using (StreamReader stream = new StreamReader(path + "SEGA\\PHANTASYSTARONLINE2"))
+                {
+                    string currentVersion = stream.ReadToEnd();
+
+                    //Compares both versions
+                    if (currentVersion != serverVersion)
+                    {
+                        Process.Start("Modules\\Updater.exe");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
 
         public MainWindow()
         {
-            runHelper();
+            RunHelper();
+            CheckForUpdates();
             InitializeComponent();
         }
 
@@ -53,7 +91,35 @@ namespace Patcher
             //Loads settings
             Settings settings = new Settings().ReturnSettings();
             var command = "/C " + settings.PSO2;
-            System.Diagnostics.Process.Start("EnglishPatchInstaller.exe", command);
+            Process.Start("Modules\\EnglishPatchInstaller.exe", command);
+        }
+
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+            //Loads settings
+            Settings settings = new Settings().ReturnSettings();
+
+            if (File.Exists(settings.PSO2 + "/pso2.exe"))
+            {
+                var info = new ProcessStartInfo(settings.PSO2 + "/pso2.exe");
+                info.EnvironmentVariables.Add("-pso2", "+0x01e3f1e9");
+                info.Arguments = "+0x33aca2b9";
+                info.UseShellExecute = false;
+
+                var process = new Process();
+                process.StartInfo = info;
+                process.Start();
+            }
+            else
+            {
+                MessageBox.Show("Nope");
+            }
+        }
+
+        private void button2_Click(object sender, RoutedEventArgs e)
+        {
+            var PSO2Settings = new Window1();
+            PSO2Settings.Show();
         }
     }
 }

@@ -41,7 +41,7 @@ namespace EnglishPatchInstaller
         public void ExtractPatch(string filename)
         {
             var directory = "patch";
-            var command = string.Format("/C 7z.exe e {0} -o{1}", filename, directory);
+            var command = string.Format("/C 7z.exe e {0} -o{1} -aoa", filename, directory);
 
             Directory.CreateDirectory(directory);
             var process = Process.Start("cmd.exe", command);

@@ -1,0 +1,16 @@
+﻿<Window x:Class="Patcher.Window1"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Patcher"
+        mc:Ignorable="d"
+        Title="PSO2 Settings" Height="386.029" Width="811.324">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Slider x:Name="slider" HorizontalAlignment="Left" Margin="70,65,0,0" VerticalAlignment="Top" Width="656" Maximum="6" Minimum="1" TickPlacement="Both" ToolTip="Hi!" SmallChange="1" IsSnapToTickEnabled="True"/>
+
+    </Grid>
+</Window>
