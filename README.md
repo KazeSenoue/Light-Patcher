@@ -1,5 +1,7 @@
 # Light Patcher
-![alt tag](http://vignette4.wikia.nocookie.net/ninehourspersonsdoors/images/1/14/Lighttt.png/revision/latest/scale-to-width-down/120?cb=20150107112634) ulululul
+<p align="center">
+  <img src="http://vignette3.wikia.nocookie.net/ninehourspersonsdoors/images/f/f0/Clover_snake_reunion.png/revision/latest/scale-to-width-down/250?cb=20160403000903"/>
+</p>
 
 # Dependencies
 1. A fucking brain
