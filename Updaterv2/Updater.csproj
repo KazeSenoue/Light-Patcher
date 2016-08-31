@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{44948BB7-39C5-4B7F-A8E3-E414B03DB04C}</ProjectGuid>
+    <ProjectGuid>{BF5C63C7-FBE7-4D3C-90DA-9A2C3D479C84}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Updater</RootNamespace>
-    <AssemblyName>Updater</AssemblyName>
+    <RootNamespace>Updaterv2</RootNamespace>
+    <AssemblyName>Updaterv2</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

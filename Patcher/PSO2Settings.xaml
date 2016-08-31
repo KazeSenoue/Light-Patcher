@@ -11,6 +11,14 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Slider x:Name="slider" HorizontalAlignment="Left" Margin="70,65,0,0" VerticalAlignment="Top" Width="656" Maximum="6" Minimum="1" TickPlacement="Both" ToolTip="Hi!" SmallChange="1" IsSnapToTickEnabled="True"/>
+        <GroupBox x:Name="groupBox" Header="Resolution" HorizontalAlignment="Left" Margin="70,175,0,0" VerticalAlignment="Top" Height="121" Width="213">
+            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="comboBox_SelectionChanged" IsSynchronizedWithCurrentItem="False">
+                <ComboBoxItem>800 x 600</ComboBoxItem>
+                <ComboBoxItem>1280 x 720</ComboBoxItem>
+                <ComboBoxItem>1366 × 768</ComboBoxItem>
+                <ComboBoxItem>1920 x 1080</ComboBoxItem>
+            </ComboBox>
+        </GroupBox>
 
     </Grid>
 </Window>

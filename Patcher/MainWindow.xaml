@@ -17,9 +17,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="button1" Content="Launch PSO2" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="144" Height="34" Click="button1_Click"/>
-                    <WebBrowser HorizontalAlignment="Left" Height="201" Margin="10,60,0,0" VerticalAlignment="Top" Width="471" Source="http://kazesenoue.moe/uploads/drunk_isaac.gif"/>
-                    <Button x:Name="button2" Content="Check for old / missing files" HorizontalAlignment="Left" Margin="288,10,0,0" VerticalAlignment="Top" Width="193" Height="34" Click="button2_Click"/>
+                    <Button x:Name="button1" Content="Launch PSO2" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="162" Height="34" Click="button1_Click"/>
+                    <Button x:Name="button2" Content="Repair PSO2 Files" HorizontalAlignment="Left" Margin="10,49,0,0" VerticalAlignment="Top" Width="162" Height="34" Click="button2_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Patches">
@@ -28,20 +27,14 @@
                         <ColumnDefinition Width="11*"/>
                         <ColumnDefinition Width="480*"/>
                     </Grid.ColumnDefinitions>
-                    <GroupBox x:Name="groupBox" Header="Patches" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="251" Width="230" Grid.ColumnSpan="2"/>
+                    <GroupBox x:Name="groupBox" Header="Patches" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="251" Width="230" Grid.ColumnSpan="2">
+                        <Grid HorizontalAlignment="Left" Height="202" Margin="10,10,0,0" VerticalAlignment="Top" Width="192">
+                            <Button x:Name="button" Content="Install English Patch" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="172" Click="button_Click_2"/>
+                        </Grid>
+                    </GroupBox>
                     <GroupBox x:Name="groupBox_Copy" Header="Plugins" HorizontalAlignment="Left" Margin="240,10,0,0" VerticalAlignment="Top" Height="251" Width="230" Grid.Column="1">
                         <Grid HorizontalAlignment="Left" Height="248" Margin="0,1,-8,-20" VerticalAlignment="Top" Width="226"/>
                     </GroupBox>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Settings">
-                <Grid Background="#FFE5E5E5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="11*"/>
-                        <ColumnDefinition Width="480*"/>
-                    </Grid.ColumnDefinitions>
-                    <Label x:Name="label" Content="PSO2 Directory:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="textBox" Grid.Column="1" HorizontalAlignment="Left" Height="22" Margin="97,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
                 </Grid>
             </TabItem>
         </TabControl>

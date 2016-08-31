@@ -60,15 +60,19 @@ namespace Patcher
             //Reads current stored version
             try
             {
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                using (StreamReader stream = new StreamReader(path + "SEGA\\PHANTASYSTARONLINE2"))
+                string path = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\SEGA\PHANTASYSTARONLINE2\version.ver";
+                using (StreamReader stream = new StreamReader(path))
                 {
                     string currentVersion = stream.ReadToEnd();
 
                     //Compares both versions
                     if (currentVersion != serverVersion)
                     {
-                        Process.Start("Modules\\Updater.exe");
+                        //Loads settings
+                        Settings settings = new Settings().ReturnSettings();
+
+                        string args = String.Format("\"{0}\"", settings.PSO2);
+                        Process.Start("Modules\\Updater.exe", args);
                     }
                 }
             }
@@ -86,11 +90,11 @@ namespace Patcher
             InitializeComponent();
         }
 
-        private void button_Click_1(object sender, RoutedEventArgs e)
+        private void button_Click_2(object sender, RoutedEventArgs e)
         {
             //Loads settings
             Settings settings = new Settings().ReturnSettings();
-            var command = "/C " + settings.PSO2;
+            var command = String.Format("\"{0}\"", settings.PSO2);
             Process.Start("Modules\\EnglishPatchInstaller.exe", command);
         }
 
@@ -118,8 +122,17 @@ namespace Patcher
 
         private void button2_Click(object sender, RoutedEventArgs e)
         {
-            var arguments = "/C \"{0}\" \"update\"";
-            Process.Start(@"Modules/Updater.exe", arguments);
+            //Loads settings
+            Settings settings = new Settings().ReturnSettings();
+
+            string args = String.Format("\"{0}\"", settings.PSO2);
+            Process.Start(@"Modules\FixInstall.exe", args);
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            var PSO2Settings = new Window1();
+            PSO2Settings.Show();
         }
     }
 }
