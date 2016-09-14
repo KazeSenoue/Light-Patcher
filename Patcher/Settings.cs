@@ -48,10 +48,10 @@ namespace Patcher
             var selectedDir = dialog.FileName;
             if (selectedDir.EndsWith("pso2_bin") && File.Exists("settings.json"))
             {
-                settings.PSO2 = selectedDir;
+                settings.PSO2 = selectedDir + @"\";
                 string output = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText("settings.json", output);
-                System.Windows.MessageBox.Show(String.Format("Saved!\nSelected folder: {0}", settings.PSO2));
+                MessageBox.Show(String.Format("Saved!\nSelected folder: {0}", settings.PSO2));
             }
             else
             {
@@ -62,6 +62,7 @@ namespace Patcher
                 }
                 else
                 {
+                    MessageBox.Show("Alrighty. Bye bye!");
                     Application.Current.Shutdown();
                 }
             }

@@ -60,7 +60,7 @@ namespace Patcher
             //Reads current stored version
             try
             {
-                string path = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\SEGA\PHANTASYSTARONLINE2\version.ver";
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\SEGA\PHANTASYSTARONLINE2\version.ver";
                 using (StreamReader stream = new StreamReader(path))
                 {
                     string currentVersion = stream.ReadToEnd();
@@ -126,7 +126,7 @@ namespace Patcher
             Settings settings = new Settings().ReturnSettings();
 
             string args = String.Format("\"{0}\"", settings.PSO2);
-            Process.Start(@"Modules\FixInstall.exe", args);
+            Process.Start(@"Modules/FixInstall.exe", args);
         }
 
         private void button_Click(object sender, RoutedEventArgs e)

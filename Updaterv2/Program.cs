@@ -20,16 +20,47 @@ namespace Updaterv2
         {
             using (var md5 = MD5.Create())
             {
-                var hash = md5.ComputeHash(File.ReadAllBytes(pso2path + filename.Replace(".pat", "")));
-                var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
-
-                if (fileMD5 != serverMD5)
+                try
+                {
+                    var hash = md5.ComputeHash(File.ReadAllBytes(pso2path + filename.Replace(".pat", "")));
+                    var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
+                    
+                    if (fileMD5 != serverMD5)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch
                 {
                     return true;
                 }
-                else
+            }
+        }
+
+        static bool DownloadFile(string file, int i, int lineCount)
+        {
+            using (var client = new WebClient())
+            {
+                Console.Write("\r| Downloading: {0} | Current: {1} | Total: {2}", file[0], i, lineCount);
+                try
                 {
-                    return false;
+                    client.Headers.Add("user-agent", "AQUA_HTTP");
+                    client.DownloadFile(baseURL + file, pso2path + file);
+                    return true;
+                }
+                catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
+                {
+                    //Ignores 404s because Sega sucks balls at VCing
+                    return true;
+                }
+                catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.OK)
+                {
+                    Console.WriteLine("OK!");
+                    return true;
                 }
             }
         }
@@ -75,22 +106,20 @@ namespace Updaterv2
                     if (line != null)
                     {
                         string[] file = line.Split(null);
-                        using (var client = new WebClient())
+                        try
                         {
-                            try
+                            if (CompareMD5(file[0], file[2]) == true)
                             {
-                                Console.Write("\r| Downloading: {0} | Current: {1} | Total: {2}", file[0], i, lineCount);
-                                client.Headers.Add("user-agent", "AQUA_HTTP");
-                                client.DownloadFile(baseURL + file[0], pso2path + file[0]);
+                                try
+                                {
+                                    DownloadFile(file[0], i, lineCount);
+                                }
+                                catch { }
                             }
-                            catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
-                            {
-                                //Ignores 404s because Sega sucks balls at VCing
-                            }
-                            catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.OK)
-                            {
-                                Console.WriteLine("OK!");
-                            }
+                        }
+                        catch
+                        {
+                            DownloadFile(file[0], i, lineCount);
                         }
                     }
                     else
