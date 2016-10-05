@@ -41,7 +41,7 @@ namespace FixInstall
                 try
                 {
                     client.Headers.Add("user-agent", "AQUA_HTTP");
-                    client.DownloadFile(baseURL + file, pso2path + file);
+                    client.DownloadFile(baseURL + file, pso2path + file.Replace(".pat", ""));
                     Console.WriteLine("File: {0}");
                     return true;
                 }
@@ -173,9 +173,9 @@ namespace FixInstall
                     }
                 }
             }
+            Directory.Delete("temp", true);
             Console.Write("| Process finished. You can launch the game now.");
             Console.ReadLine();
-            //Directory.Delete("temp", true);
         }
     }
 }
