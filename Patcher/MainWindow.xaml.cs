@@ -95,7 +95,7 @@ namespace Patcher
             //Loads settings
             Settings settings = new Settings().ReturnSettings();
             var command = String.Format("\"{0}\"", settings.PSO2);
-            Process.Start("Modules\\EnglishPatchInstaller.exe", command);
+            Process.Start(@"InstallEnglishPatch.exe", command);
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)
@@ -105,6 +105,14 @@ namespace Patcher
 
             if (File.Exists(settings.PSO2 + "/pso2.exe"))
             {
+                //Downloads ddraw.dll and translation files
+                using (var client = new WebClient())
+                {
+                    client.DownloadFile("http://kazesenoue.moe/pso2/ddraw.dll", settings.PSO2 + "ddraw.dll");
+                    client.DownloadFile("http://108.61.203.33/freedom/translation.bin", settings.PSO2 + "translation.bin");
+                    client.DownloadFile("http://108.61.203.33/freedom/translator.dll", settings.PSO2 + @"\plugins\translator.dll");
+                }
+
                 var info = new ProcessStartInfo(settings.PSO2 + "/pso2.exe");
                 info.EnvironmentVariables.Add("-pso2", "+0x01e3f1e9");
                 info.Arguments = "+0x33aca2b9";
@@ -113,6 +121,20 @@ namespace Patcher
                 var process = new Process();
                 process.StartInfo = info;
                 process.Start();
+
+                //Deletes ddraw.dll after it's launched
+                while (true)
+                {
+                    Process[] processes = Process.GetProcessesByName("pso2");
+                    if (processes.Length > 0){
+                        if (processes[0].MainWindowTitle == "Phantasy Star Online 2" && processes[0].MainModule.ModuleName == "pso2.exe")
+                        {
+                            File.Delete(settings.PSO2 + "ddraw.dll");
+                            break;
+                        }
+                    }
+                    
+                }
             }
             else
             {

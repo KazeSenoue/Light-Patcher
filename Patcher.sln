@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main", "Patcher\Main.csproj", "{0F3F8D75-9AAF-4767-B1CB-B779D9FA9157}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A726CD0D-A6D9-4839-B888-C2EA77CCEE90} = {A726CD0D-A6D9-4839-B888-C2EA77CCEE90}
+		{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA} = {BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{3698CCC0-2B3B-452B-9133-9113F4C41223}"
 EndProject

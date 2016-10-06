@@ -18,8 +18,8 @@ namespace EnglishPatchInstaller
             Stream stream = client.OpenRead(baseURL);
             StreamReader reader = new StreamReader(stream);
 
-            string patchURL = reader.ReadLine();
-            
+            string patchURL = "http://pso2.arghlex.net/pso2/patch_2016_10_05.zip";
+
             if (!File.Exists(@"7za.exe"))
             {
                 Console.WriteLine("7za.exe not found. Downloading...");
@@ -33,13 +33,13 @@ namespace EnglishPatchInstaller
 
             //Downloads patch
             var filename = Path.GetFileName(patchURL);
-            Console.WriteLine("Downloading english patch...");
+            Console.WriteLine("Downloading english patch... {0}", temppath);
             client.DownloadFile(patchURL, temppath + filename);
 
             //Extracts patch to pso2_bin
             Console.WriteLine("Extracting...");
-            var directory = pso2path + @"data\win32\";
-            var command = string.Format("/C 7z.exe e {0} -o{1} -aoa", filename, directory);
+            var directory = pso2path + @"\data\win32";
+            var command = string.Format("/C 7za.exe e {0} -o{1}", temppath + filename, directory);
             var process = Process.Start("cmd.exe", command);
             process.WaitForExit();
 
