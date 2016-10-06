@@ -186,16 +186,19 @@ namespace Update
 
                 if (System.IO.Directory.Exists(sourcePath))
                 {
-                    string[] newFiles = System.IO.Directory.GetFiles(sourcePath);
-
-                    // Copy the files and overwrite destination files if they already exist.
-                    foreach (string s in newFiles)
+                    string[] directories = Directory.GetDirectories(sourcePath);
+                    foreach (string directory in directories)
                     {
-                        // Use static Path methods to extract only the file name from the path.
-                        var fileName = System.IO.Path.GetFileName(s);
-                        var destFile = System.IO.Path.Combine(targetPath, fileName);
-                        Console.Write("\r| Moving: {0}                         ", fileName);
-                        System.IO.File.Copy(s, destFile, true);
+                        string[] newFiles = System.IO.Directory.GetFiles(directory);
+
+                        foreach (string s in newFiles)
+                        {
+                            // Use static Path methods to extract only the file name from the path.
+                            var fileName = System.IO.Path.GetFileName(s);
+                            var destFile = System.IO.Path.Combine(targetPath, fileName);
+                            Console.Write("\r| Moving: {0}", fileName);
+                            System.IO.File.Copy(s, destFile, true);
+                        }
                     }
                 }
             }
@@ -204,7 +207,7 @@ namespace Update
                 Console.WriteLine(ex.Message);
             }
 
-            Console.WriteLine("Update successful.");
+            Console.WriteLine("\n| Update successful.");
             Console.ReadLine();
         }
     }
