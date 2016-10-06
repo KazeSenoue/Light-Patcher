@@ -13,35 +13,50 @@ namespace Update
     class Program
     {
         static string[] arguments = Environment.GetCommandLineArgs();
-        static int threadCount = Int32.Parse(arguments[2]);
+        static int threadCount = 4;
         static string pso2path = arguments[1];
 
         static string baseURL = @"http://download.pso2.jp/patch_prod/patches/";
 
-        static bool DownloadFile(string file, int index, int total)
+        static bool DownloadFile(string file, int index, int total, string temppath)
         {
             bool success = false;
+            float percentage = (index / total) * 100;
 
-            Console.WriteLine("| Downloading: {0} ({1} / {2})", file, index, total);
+            Console.WriteLine("| Downloading: {0} ({1} / {2}) | Progress: {3}%", file, index, total, percentage);
 
-            using (var client = new WebClient())
+            
+            try
             {
-                try
+                using (var client = new WebClient())
                 {
                     client.Headers.Add("user-agent", "AQUA_HTTP");
-                    client.DownloadFile(baseURL + file, pso2path + file);
+                    client.DownloadFile(baseURL + file, temppath + file.Replace(".pat", ""));
                     success = true;
                 }
-                catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
+            }
+            catch (WebException ex)
+            {
+                if ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
                 {
-                    success = true;
                     //Ignores 404s because Sega sucks balls at VCing
-                }
-                catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.OK)
-                {
                     success = true;
-                    Console.WriteLine("OK!");
                 }
+                else if (ex.Status == WebExceptionStatus.Timeout)
+                {
+                    //???
+                    Console.WriteLine("Timeout.");
+                }
+                else if ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    Console.WriteLine("Forbidden.");
+                }
+                else
+                    Console.WriteLine(ex.Status);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
             if (success)
@@ -54,8 +69,50 @@ namespace Update
             }
         }
 
+        static void DownloadUpdatedFiles(List<string> missingFiles, string temppath)
+        {
+            // Downloads every file on files list
+            int atomicIndex = 0;
+
+            var threads = new List<Thread>();
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                var t = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        var index = Interlocked.Increment(ref atomicIndex);
+                        if (index >= missingFiles.Count)
+                            break;
+
+                        try
+                        {
+                            DownloadFile(missingFiles[index] + ".pat", index, missingFiles.Count, temppath);
+                        }
+                        catch (WebException ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
+
+                    }
+                });
+
+                threads.Add(t);
+                t.Start();
+            }
+
+            foreach (var t in threads)
+                t.Join();
+        }
+
         static void Main(string[] args)
         {
+            //Creates a folder on temp
+            string temppath = Path.GetTempPath();
+            Directory.CreateDirectory(temppath + @"LightPatcher\pso2_bin\data\win32\script");
+            temppath = temppath + @"LightPatcher\pso2_bin\";
+
             Console.WriteLine("|----------------------------------------------------------------------------|");
 
             string[] infoFiles = new string[] { "patchlist.txt", "launcherlist.txt", "version.ver" };
@@ -71,7 +128,7 @@ namespace Update
                     try
                     {
                         client.Headers.Add("user-agent", "AQUA_HTTP");
-                        client.DownloadFile(baseURL + file, @"temp\" + Path.GetFileName(file));
+                        client.DownloadFile(baseURL + file, temppath + Path.GetFileName(file));
                         client.Dispose();
                     }
                     catch (Exception e)
@@ -82,37 +139,70 @@ namespace Update
             }
 
             //Reads patchlist.txt to list
-            var files = new List<string>();
-            foreach (string line in File.ReadLines(@"temp\patchlist.txt").ToList())
+            var segaFiles = new List<string>();
+            foreach (string line in File.ReadLines(temppath + @"patchlist.txt").ToList())
             {
                 var newLine = line.Split(null);
-                files.Add(newLine[0]);
+                segaFiles.Add(newLine[0].Replace(".pat", ""));
             }
 
-            int atomicIndex = 0;
+            //Scans temp folder for pso2 files and adds missing ones to a list
+            IEnumerable<string> files = Directory.EnumerateFiles(temppath, "*.*", SearchOption.AllDirectories);
+            var fixedFiles = new List<string>();
 
-            var threads = new List<Thread>();
-
-            for (int i = 0; i < threadCount; i++)
+            foreach (string file in files)
             {
-                var t = new Thread(() =>
-                {
-                    while (true)
-                    {
-                        var index = Interlocked.Increment(ref atomicIndex);
-                        if (index >= files.Count)
-                            break;
-
-                        DownloadFile(files[index], index, files.Count);
-                    }
-                });
-
-                threads.Add(t);
-                t.Start();
+                fixedFiles.Add(file.Replace(temppath, "").Replace(@"\", @"/"));
             }
 
-            foreach (var t in threads)
-                t.Join();
+            var missingFiles = segaFiles.Except(fixedFiles).ToList();
+            
+            //Downloads missing files
+            for (int retries = 0; retries < 10; retries++) {
+                try
+                {
+                    DownloadUpdatedFiles(missingFiles, temppath);
+                    break;
+                }
+                catch (Exception)
+                { 
+                    if (retries < 5)
+                    {
+                        Console.WriteLine("| Something went wrong. Retrying...");
+                        continue;
+                    }
+                    else
+                    {
+                        Console.WriteLine("| Failed to update.");
+                    }
+                }
+            }
+
+            //Moves files on temp folder to pso2_bin
+            try
+            {
+                var targetPath = pso2path;
+                var sourcePath = temppath + @"data\win32\";
+
+                if (System.IO.Directory.Exists(sourcePath))
+                {
+                    string[] newFiles = System.IO.Directory.GetFiles(sourcePath);
+
+                    // Copy the files and overwrite destination files if they already exist.
+                    foreach (string s in newFiles)
+                    {
+                        // Use static Path methods to extract only the file name from the path.
+                        var fileName = System.IO.Path.GetFileName(s);
+                        var destFile = System.IO.Path.Combine(targetPath, fileName);
+                        Console.Write("\r| Moving: {0}                         ", fileName);
+                        System.IO.File.Copy(s, destFile, true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
             Console.WriteLine("Update successful.");
             Console.ReadLine();
