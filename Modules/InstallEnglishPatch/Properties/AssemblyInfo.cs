@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EnglishPatchInstaller")]
+[assembly: AssemblyTitle("InstallEnglishPatch")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("EnglishPatchInstaller")]
+[assembly: AssemblyProduct("InstallEnglishPatch")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b5bd5fd5-0f7a-4853-894e-c51c142d16b4")]
+[assembly: Guid("bad6ea79-0ba8-47cd-8048-ebfd144d2eaa")]
 
 // Version information for an assembly consists of the following four values:
 //
