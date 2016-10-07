@@ -4,7 +4,7 @@
   <i>"Tu fui, ego eris."</i>
 </p>
 
-Light Patcher is an alternative launcher for Phantsy Star Online 2, with the goal of being as simple and straightforward as possible. It's completely modular, meaning different languages can be used as long as they compile an exe that can be launched from the actual patcher.
+Light Patcher is an alternative launcher for Phantsy Star Online 2, developed with the goal of being as simple and straightforward as possible. It's completely modular, meaning different languages can be used as long as they compile an exe that can be launched from the actual patcher.
 
 ## Dependencies
 1. A computer
