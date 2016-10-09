@@ -13,6 +13,10 @@ namespace Patcher
     class Settings
     {
         [JsonRequired]
+        [JsonProperty("ProxyURL")]
+        public string ProxyURL { get; set; }
+
+        [JsonRequired]
         [JsonProperty("PSO2")]
         public string PSO2 { get; set; }
 

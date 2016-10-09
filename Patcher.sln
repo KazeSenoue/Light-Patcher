@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadClient", "Modules\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallEnglishPatch", "Modules\InstallEnglishPatch\InstallEnglishPatch.csproj", "{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixFiles", "Modules\FixFiles\FixFiles.csproj", "{7803CD86-4A98-43B9-845B-D89A8FA45C86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7803CD86-4A98-43B9-845B-D89A8FA45C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7803CD86-4A98-43B9-845B-D89A8FA45C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7803CD86-4A98-43B9-845B-D89A8FA45C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7803CD86-4A98-43B9-845B-D89A8FA45C86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +60,6 @@ Global
 		{2DBF43DC-4AF9-4817-8B3E-57E3CF8CED05} = {3698CCC0-2B3B-452B-9133-9113F4C41223}
 		{A476C74C-D0D7-42DC-A3D7-8080AFD55F0A} = {3698CCC0-2B3B-452B-9133-9113F4C41223}
 		{BAD6EA79-0BA8-47CD-8048-EBFD144D2EAA} = {3698CCC0-2B3B-452B-9133-9113F4C41223}
+		{7803CD86-4A98-43B9-845B-D89A8FA45C86} = {3698CCC0-2B3B-452B-9133-9113F4C41223}
 	EndGlobalSection
 EndGlobal

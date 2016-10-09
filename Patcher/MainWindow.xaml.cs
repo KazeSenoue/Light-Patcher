@@ -109,8 +109,28 @@ namespace Patcher
                 using (var client = new WebClient())
                 {
                     client.DownloadFile("http://kazesenoue.moe/pso2/ddraw.dll", settings.PSO2 + "ddraw.dll");
-                    client.DownloadFile("http://108.61.203.33/freedom/translation.bin", settings.PSO2 + "translation.bin");
-                    client.DownloadFile("http://108.61.203.33/freedom/translator.dll", settings.PSO2 + @"\plugins\translator.dll");
+                    
+                    //client.DownloadFile("http://108.61.203.33/freedom/translation.bin", settings.PSO2 + "translation.bin");
+                    //client.DownloadFile("http://108.61.203.33/freedom/translator.dll", settings.PSO2 + @"\plugins\translator.dll")
+
+                    if (PSO2H_Proxy.IsChecked.Value)
+                    {
+                        var pluginJson = client.DownloadString("http://kakia.org/plugins/PSOHProxy.json");
+                        dynamic data = JsonConvert.DeserializeObject(pluginJson);
+
+                        var configJson = client.DownloadString(settings.ProxyURL);
+                        dynamic config = JsonConvert.DeserializeObject(configJson);
+
+                        using (StreamWriter outputFile = new StreamWriter(settings.PSO2 + @"\proxy.txt"))
+                        {
+                            outputFile.WriteLine((string)config["host"]);
+                        }
+
+                        client.DownloadFile((string)config["publickeyurl"], settings.PSO2 + "publickey.blob");
+                        client.DownloadFile((string)data["url"], settings.PSO2 + @"plugins\" + (string)data["filename"]);
+                        
+                        MessageBox.Show("PSO2H Enabled!");
+                    }
                 }
 
                 var info = new ProcessStartInfo(settings.PSO2 + "/pso2.exe");
@@ -155,6 +175,16 @@ namespace Patcher
         {
             var PSO2Settings = new Window1();
             PSO2Settings.Show();
+        }
+
+        private void button3_Click(object sender, RoutedEventArgs e)
+        {
+            var client = new WebClient();
+
+            var json = client.DownloadString("http://kakia.org/plugins/PSOHProxy.json");
+            dynamic data = JsonConvert.DeserializeObject(json);
+
+            MessageBox.Show((string)data["filename"]);
         }
     }
 }
