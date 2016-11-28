@@ -2,21 +2,8 @@
 using System.Net;
 using System.Diagnostics;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Windows;
 using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Patcher
 {
@@ -38,7 +25,7 @@ namespace Patcher
             }
             else if (!settings.PSO2.EndsWith("pso2_bin"))
             {
-                MessageBox.Show("Your PSO2 directory seems to be invalid. Let's re-do the setup process.");
+                MessageBox.Show("Your PSO2 directory seems to be invalid. Let's re-do the setup process..");
                 settings.SavePSO2Dir();
             }
         }
