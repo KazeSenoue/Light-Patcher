@@ -26,7 +26,7 @@ namespace Patcher
 
         public Settings ReturnSettings()
         {
-            string settingsFilePath = "settings.json";
+            string settingsFilePath = "settisadasdng.json";
 
             if (!File.Exists(settingsFilePath))
             {
