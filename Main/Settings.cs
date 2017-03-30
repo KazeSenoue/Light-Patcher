@@ -12,7 +12,7 @@ namespace Main
     {
         [JsonRequired]
         [JsonProperty("pso2_path")]
-        public string pso2Path { get; set; }
+        public string Pso2Path { get; set; }
 
         public Settings ReturnSettings()
         {
@@ -21,7 +21,7 @@ namespace Main
             if (!File.Exists(settingsFilePath))
             {
                 Settings _data = new Settings();
-                _data.pso2Path = "";
+                _data.Pso2Path = "";
 
                 string json = JsonConvert.SerializeObject(_data);
                 File.WriteAllText(settingsFilePath, json);
