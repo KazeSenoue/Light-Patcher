@@ -78,19 +78,19 @@ namespace Main
             pb_label.Content = "Installing english patch...";
 
             string url = "https://pitchblack.arghlex.net/pso2/?sort=modtime&order=desc&json";
-            string base_url = "https://pso2.arghlex.net/pso2/";
+            string baseUrl = "https://pso2.arghlex.net/pso2/";
 
             var json = await GetDictAsync(url);
             var file = json["files"][0]["name"];
 
-            string file_url = base_url + file;
-            await GetFileAsync(file_url, "Temp");
+            string fileUrl = baseUrl + file;
+            await GetFileAsync(fileUrl, "Temp");
 
             using (var archive = SharpCompress.Archives.Zip.ZipArchive.Open(Path.Combine("Temp/", file)))
             {
                 foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                 {
-                    entry.WriteToDirectory(Path.Combine(settings.pso2_path, @"data/win32"), new ExtractionOptions()
+                    entry.WriteToDirectory(Path.Combine(settings.pso2Path, @"data/win32"), new ExtractionOptions()
                     {
                         ExtractFullPath = true,
                         Overwrite = true

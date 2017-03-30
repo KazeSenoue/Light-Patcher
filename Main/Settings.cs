@@ -12,24 +12,24 @@ namespace Main
     {
         [JsonRequired]
         [JsonProperty("pso2_path")]
-        public string pso2_path { get; set; }
+        public string pso2Path { get; set; }
 
         public Settings ReturnSettings()
         {
-            string settings_file_path = "settings.json";
+            string settingsFilePath = "settings.json";
 
-            if (!File.Exists(settings_file_path))
+            if (!File.Exists(settingsFilePath))
             {
                 Settings _data = new Settings();
-                _data.pso2_path = "";
+                _data.pso2Path = "";
 
                 string json = JsonConvert.SerializeObject(_data);
-                File.WriteAllText(settings_file_path, json);
+                File.WriteAllText(settingsFilePath, json);
 
                 return _data;
             }
 
-            Settings obj = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settings_file_path));
+            Settings obj = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsFilePath));
             return obj;
         }
 
