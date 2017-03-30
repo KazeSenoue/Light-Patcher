@@ -27,7 +27,7 @@ namespace Main
     /// </summary>
     public partial class MainWindow : Window
     {
-        Settings Settings = new Settings().ReturnSettings();
+        private Settings _Settings = new Settings().ReturnSettings();
 
         public MainWindow()
         {
@@ -36,9 +36,9 @@ namespace Main
 
         private void launch_button_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(Settings.Pso2Path + "/pso2.exe"))
+            if (File.Exists(_Settings.Pso2Path + "/pso2.exe"))
             {
-                var info = new ProcessStartInfo(Settings.Pso2Path + "/pso2.exe");
+                var info = new ProcessStartInfo(_Settings.Pso2Path + "/pso2.exe");
                 info.EnvironmentVariables.Add("-pso2", "+0x01e3f1e9");
                 info.Arguments = "+0x33aca2b9";
                 info.UseShellExecute = false;
@@ -90,7 +90,7 @@ namespace Main
             {
                 foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                 {
-                    entry.WriteToDirectory(Path.Combine(Settings.Pso2Path, @"data/win32"), new ExtractionOptions()
+                    entry.WriteToDirectory(Path.Combine(_Settings.Pso2Path, @"data/win32"), new ExtractionOptions()
                     {
                         ExtractFullPath = true,
                         Overwrite = true
