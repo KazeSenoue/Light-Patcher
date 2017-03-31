@@ -44,12 +44,8 @@ namespace Main
         public static void BuildCache(string directory)
         {
             var fileList = Directory.GetFiles(directory).Select(f => new FileInfo(f));
-            List<Cache> cacheFileList = new List<Cache>();
-
-            foreach (var file in fileList)
-            {
-                cacheFileList.Add(new Cache(file.Name, CalculateHash(file.FullName), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
-            }
+            var cacheFileList = fileList
+                .Select(file => new Cache(file.Name, CalculateHash(file.FullName), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds())).ToList();
 
             System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache.json"), JsonConvert.SerializeObject(cacheFileList));
         }
@@ -57,18 +53,17 @@ namespace Main
         public static List<Cache> ReturnMissingFiles(string cache, string directory)
         {
             List<Cache> cacheFileList = JsonConvert.DeserializeObject<List<Cache>>(cache);
-            var fileList = Directory.GetFiles(directory).Select(f => new FileInfo(f)).ToDictionary(x => x.Name, x => new DateTimeOffset(x.LastWriteTimeUtc).ToUnixTimeMilliseconds());
+            var fileList = Directory.GetFiles(directory)
+                .Select(f => new FileInfo(f))
+                .ToDictionary(x => x.Name, x => new DateTimeOffset(x.LastWriteTimeUtc).ToUnixTimeMilliseconds());
 
             var returnList = new List<Cache>();
 
             foreach (var file in cacheFileList)
             {
-                if (fileList.Keys.Contains(file.File))
+                if (fileList.Keys.Contains(file.File) && file.LastModified < fileList[file.File])
                 {
-                    if (file.LastModified < fileList[file.File])
-                    {
-                        returnList.Add(file);
-                    }
+                    returnList.Add(file);
                 }
                 else
                 {
