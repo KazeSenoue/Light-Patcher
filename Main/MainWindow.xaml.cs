@@ -23,12 +23,47 @@ namespace Main
 
         public MainWindow()
         {
-            InitializeComponent();
+            // Beggining of file check
+            using (var client = new WebClient())
+            {
+                if (!Directory.Exists("Temp"))
+                    Directory.CreateDirectory("Temp");
+                
+                client.Headers.Add("User-Agent", "AQUA_HTTP");
+                client.DownloadFile("http://download.pso2.jp/patch_prod/patches/patchlist.txt", "Temp/patchlist_old.txt");
+
+                client.Headers.Add("User-Agent", "AQUA_HTTP");
+                client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist.txt");
+            }
+
+            string[] fileList = System.IO.File.ReadAllLines("Temp/patchlist_old.txt").Concat(System.IO.File.ReadAllLines("Temp/patchlist.txt")).ToArray();
+
+            List<Cache> cache = Cache.ReadCache("cache.json");
+            List<File> missingFiles = new List<File>();
+            foreach (var line in fileList)
+            {
+                var file = line.Split();
+
+                int index = cache.FindIndex(f => f.File == file[0].Replace(".pat", ""));
+                if (index >= 0)
+                {
+                    if (cache[index].MD5 != file[2])
+                    {
+                        missingFiles.Add(new File(file[0], file[2]));
+                    }
+                }
+                else
+                {
+                    missingFiles.Add(new File(file[0], file[2]));
+                }
+            }
+
+            MessageBox.Show($"Missing files: {missingFiles.Count.ToString()}");
         }
 
         private void launch_button_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(_Settings.Pso2Path + "/pso2.exe"))
+            if (System.IO.File.Exists(_Settings.Pso2Path + "/pso2.exe"))
             {
                 var info = new ProcessStartInfo(_Settings.Pso2Path + "/pso2.exe");
                 info.EnvironmentVariables.Add("-pso2", "+0x01e3f1e9");
@@ -101,6 +136,12 @@ namespace Main
             string fileUrl = baseUrl + file;
             Directory.CreateDirectory("Temp");
             await GetFileAsync(fileUrl, Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            var file = System.IO.File.ReadAllText(@"C:\Users\Rodrigo\Documents\SEGA\PHANTASYSTARONLINE2\user.pso2");
+            var regex = @"\s*(.*)\s=\s([^{,]*),?$";
         }
     }
 }

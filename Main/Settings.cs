@@ -18,18 +18,18 @@ namespace Main
         {
             string settingsFilePath = "settings.json";
 
-            if (!File.Exists(settingsFilePath))
+            if (!System.IO.File.Exists(settingsFilePath))
             {
                 Settings _data = new Settings();
                 _data.Pso2Path = "";
 
                 string json = JsonConvert.SerializeObject(_data);
-                File.WriteAllText(settingsFilePath, json);
+                System.IO.File.WriteAllText(settingsFilePath, json);
 
                 return _data;
             }
 
-            Settings obj = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsFilePath));
+            Settings obj = JsonConvert.DeserializeObject<Settings>(System.IO.File.ReadAllText(settingsFilePath));
             return obj;
         }
 

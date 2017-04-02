@@ -41,6 +41,27 @@ namespace Main
             }
         }
 
+        public static void UpdateCache(string file, string MD5, long lastModified)
+        {
+            var cache = JsonConvert.DeserializeObject<List<Cache>>(System.IO.File.ReadAllText("cache.json"));
+            int index = cache.FindIndex(f => f.File == file);
+
+            if (index >= 0)
+            {
+                cache[index].MD5 = MD5;
+                cache[index].LastModified = lastModified;
+            }
+            else
+            {
+                cache.Add(new Cache(file, MD5, lastModified));
+            }
+        }
+
+        public static List<Cache> ReadCache(string directory)
+        {
+            return JsonConvert.DeserializeObject<List<Cache>>(System.IO.File.ReadAllText(directory));
+        }
+
         public static void BuildCache(string directory)
         {
             var fileList = Directory.GetFiles(directory).Select(f => new FileInfo(f));
@@ -61,7 +82,7 @@ namespace Main
 
             foreach (var file in cacheFileList)
             {
-                if (fileList.Keys.Contains(file.File) && file.LastModified < fileList[file.File])
+                if (fileList.Keys.Contains(file.File) && file.LastModified != fileList[file.File])
                 {
                     returnList.Add(file);
                 }
