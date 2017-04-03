@@ -55,7 +55,7 @@ namespace Main
             InitializeComponent();
             Main = this;
 
-            if (!File.Exists("cache.json"))
+            if (!System.IO.File.Exists("cache.json"))
             {
                 MessageBox.Show("It seems this is your first time running Light Patcher. In order for it to work, " +
                                 "it needs to cache your PSO2 install, a process that might take a few minutes depending on your install. Please click OK to begin the caching process.");
@@ -63,9 +63,7 @@ namespace Main
                 Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
             }
 
-            Debug.WriteLine(Path.Combine(_Settings.Pso2Path, @"damagelogs\1477699228.csv"));
-
-            if (File.Exists("cache.json"))
+            if (System.IO.File.Exists("cache.json"))
             {
                 //Beggining of file check
                 using (var client = new WebClient())
@@ -80,28 +78,29 @@ namespace Main
                     client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist.txt");
                 }
 
-                List<Cache> fileList = File.ReadAllLines("Temp/patchlist_old.txt").Concat(File.ReadAllLines("Temp/patchlist.txt"))
-                    .Select(f => new Cache(f.Split()[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split()[2]))
+                List<Cache> fileList = System.IO.File.ReadAllLines("Temp/patchlist_old.txt").Concat(System.IO.File.ReadAllLines("Temp/patchlist.txt"))
+                    .Select(f => new Cache(Path.GetFileNameWithoutExtension(f.Split()[0]), f.Split()[2]))
                     .ToList();
-                
-                List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", SearchOption.AllDirectories)
+
+
+                List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", System.IO.SearchOption.AllDirectories)
                     .Select(f => new FileInfo(f))
-                    .Select(f => new Cache(f.FullName.Substring(_Settings.Pso2Path.Length+1), null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
+                    .Select(f => new Cache(f.Name, null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
                     .ToList();
 
                 List<Cache> cache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5)).ToList();
                 List<Cache> missingFiles = fileList.Except(cache, new FileCacheEntryNameComparer()).ToList();
-                List<Cache> modifiedFiles = cache.Except(fileList, new FileCacheEntryLastModifiedComparer())
+                List<Cache> modifiedFiles = localFiles.Except(cache, new FileCacheEntryLastModifiedComparer())
                     .Except(missingFiles, new FileCacheEntryNameComparer())
                     .ToList();
 
                 List<Cache> corruptFiles = modifiedFiles.Where(e =>
                 {
-                    Debug.WriteLine(e.File);
                     using (var md5 = System.Security.Cryptography.MD5.Create())
-                    using (var stream = new BufferedStream(File.OpenRead(Path.Combine(_Settings.Pso2Path, e.File)), 1200000))
+                    using (var stream = new BufferedStream(System.IO.File.OpenRead(e.File), 12000000))
                     {
-                        var hash = md5.ComputeHash(stream);
+
+                        var hash = md5.ComputeHash(System.IO.File.ReadAllBytes(e.File));
                         var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
 
                         return fileMD5 != e.MD5;
