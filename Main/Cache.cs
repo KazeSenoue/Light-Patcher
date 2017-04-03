@@ -30,19 +30,19 @@ namespace Main
             this.LastModified = LastModified;
         }
 
-        public static async Task<string> CalculateHash(string file)
+        public static async Task<string> CalculateHash(string file, System.Security.Cryptography.MD5 md5)
         {
             Task<string> MD5 = Task.Run(() =>
             {
-                using (var md5 = System.Security.Cryptography.MD5.Create())
-                using (var stream = new BufferedStream(System.IO.File.OpenRead(file), 12000000))
                 {
+                    using (var stream = new BufferedStream(System.IO.File.OpenRead(file), 1200000))
+                    {
+                        var hash = md5.ComputeHash(stream);
+                        var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
 
-                    var hash = md5.ComputeHash(System.IO.File.ReadAllBytes(file));
-                    var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
-
-                    return fileMD5;
-                }
+                        return fileMD5;
+                    }
+                };
             });
 
             return await MD5;
@@ -78,7 +78,12 @@ namespace Main
             foreach (var file in fileList)
             {
                 i++;
-                cacheFileList.Add(new Cache(file.FullName.Substring(directory.Length + 1).Replace(@"\", @"/"), await CalculateHash(file.FullName), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
+
+                using (var md5 = System.Security.Cryptography.MD5.Create())
+                {
+                    cacheFileList.Add(new Cache(file.FullName.Substring(directory.Length + 1), await CalculateHash(file.FullName, md5), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
+                }
+
                 MainWindow.UpdateLabel($"{i} / {fileList.Count()} - {(double)(100 * i) / fileList.Count():F3}%");
                 MainWindow.UpdateProgressBar((100 * i) / fileList.Count());
             }
