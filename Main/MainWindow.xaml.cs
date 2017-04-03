@@ -20,45 +20,96 @@ namespace Main
     public partial class MainWindow : Window
     {
         private Settings _Settings = new Settings().ReturnSettings();
+        public static MainWindow Main;
+
+        class FileCacheEntryNameComparer : IEqualityComparer<Cache>
+        {
+            public bool Equals(Cache x, Cache y) => x.File == y.File;
+            public int GetHashCode(Cache obj) => obj.File.GetHashCode();
+        }
+
+        class FileCacheEntryLastModifiedComparer : IEqualityComparer<Cache>
+        {
+            public bool Equals(Cache x, Cache y) => x.LastModified == y.LastModified;
+            public int GetHashCode(Cache obj) => obj.LastModified.GetHashCode();
+        }
+
+        public static void UpdateProgressBar(double value)
+        {
+            Main.Dispatcher.Invoke(() =>
+            {
+                Main.progress_bar.Value = value;
+            });
+        }
+
+        public static void UpdateLabel(string content)
+        {
+            Main.Dispatcher.Invoke(() =>
+            {
+                Main.pb_label.Content = content;
+            });
+        }
 
         public MainWindow()
         {
-            // Beggining of file check
-            using (var client = new WebClient())
-            {
-                if (!Directory.Exists("Temp"))
-                    Directory.CreateDirectory("Temp");
-                
-                client.Headers.Add("User-Agent", "AQUA_HTTP");
-                client.DownloadFile("http://download.pso2.jp/patch_prod/patches/patchlist.txt", "Temp/patchlist_old.txt");
+            InitializeComponent();
+            Main = this;
 
-                client.Headers.Add("User-Agent", "AQUA_HTTP");
-                client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist.txt");
+            if (!System.IO.File.Exists("cache.json"))
+            {
+                MessageBox.Show("It seems this is your first time running Light Patcher. In order for it to work, " +
+                                "it needs to cache your PSO2 install, a process that might take a few minutes depending on your install. Please click OK to begin the caching process.");
+
+                Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
             }
 
-            string[] fileList = System.IO.File.ReadAllLines("Temp/patchlist_old.txt").Concat(System.IO.File.ReadAllLines("Temp/patchlist.txt")).ToArray();
-
-            List<Cache> cache = Cache.ReadCache("cache.json");
-            List<File> missingFiles = new List<File>();
-            foreach (var line in fileList)
+            if (System.IO.File.Exists("cache.json"))
             {
-                var file = line.Split();
-
-                int index = cache.FindIndex(f => f.File == file[0].Replace(".pat", ""));
-                if (index >= 0)
+                //Beggining of file check
+                using (var client = new WebClient())
                 {
-                    if (cache[index].MD5 != file[2])
+                    if (!Directory.Exists("Temp"))
+                        Directory.CreateDirectory("Temp");
+
+                    client.Headers.Add("User-Agent", "AQUA_HTTP");
+                    client.DownloadFile("http://download.pso2.jp/patch_prod/patches/patchlist.txt", "Temp/patchlist_old.txt");
+
+                    client.Headers.Add("User-Agent", "AQUA_HTTP");
+                    client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist.txt");
+                }
+
+                List<Cache> fileList = System.IO.File.ReadAllLines("Temp/patchlist_old.txt").Concat(System.IO.File.ReadAllLines("Temp/patchlist.txt"))
+                    .Select(f => new Cache(Path.GetFileNameWithoutExtension(f.Split()[0]), f.Split()[2]))
+                    .ToList();
+
+
+                List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", System.IO.SearchOption.AllDirectories)
+                    .Select(f => new FileInfo(f))
+                    .Select(f => new Cache(f.Name, null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
+                    .ToList();
+
+                List<Cache> cache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5)).ToList();
+                List<Cache> missingFiles = fileList.Except(cache, new FileCacheEntryNameComparer()).ToList();
+                List<Cache> modifiedFiles = localFiles.Except(cache, new FileCacheEntryLastModifiedComparer())
+                    .Except(missingFiles, new FileCacheEntryNameComparer())
+                    .ToList();
+
+                List<Cache> corruptFiles = modifiedFiles.Where(e =>
+                {
+                    using (var md5 = System.Security.Cryptography.MD5.Create())
+                    using (var stream = new BufferedStream(System.IO.File.OpenRead(e.File), 12000000))
                     {
-                        missingFiles.Add(new File(file[0], file[2]));
-                    }
-                }
-                else
-                {
-                    missingFiles.Add(new File(file[0], file[2]));
-                }
-            }
 
-            MessageBox.Show($"Missing files: {missingFiles.Count.ToString()}");
+                        var hash = md5.ComputeHash(System.IO.File.ReadAllBytes(e.File));
+                        var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
+
+                        return fileMD5 != e.MD5;
+                    }
+                }).ToList();
+
+                if (missingFiles.Count() > 0)
+                    MessageBox.Show($"Missing files: {missingFiles.Count().ToString()}\nCorrupt files: {corruptFiles.Count().ToString()}");
+            }
         }
 
         private void launch_button_Click(object sender, RoutedEventArgs e)

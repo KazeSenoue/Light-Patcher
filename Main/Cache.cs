@@ -21,24 +21,31 @@ namespace Main
 
         [JsonRequired]
         [JsonProperty("lastModified")]
-        public long LastModified { get; set; }
+        public long? LastModified { get; set; }
 
-        public Cache(string File, string MD5, long LastModified)
+        public Cache(string File, string MD5 = null, long? LastModified = null)
         {
             this.File = File;
             this.MD5 = MD5;
             this.LastModified = LastModified;
         }
 
-        public static string CalculateHash(string file)
+        public static async Task<string> CalculateHash(string file)
         {
-            using (var md5 = System.Security.Cryptography.MD5.Create())
+            Task<string> MD5 = Task.Run(() =>
             {
-                var hash = md5.ComputeHash(System.IO.File.ReadAllBytes(file));
-                var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
+                using (var md5 = System.Security.Cryptography.MD5.Create())
+                using (var stream = new BufferedStream(System.IO.File.OpenRead(file), 12000000))
+                {
 
-                return fileMD5;
-            }
+                    var hash = md5.ComputeHash(System.IO.File.ReadAllBytes(file));
+                    var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
+
+                    return fileMD5;
+                }
+            });
+
+            return await MD5;
         }
 
         public static void UpdateCache(string file, string MD5, long lastModified)
@@ -62,11 +69,19 @@ namespace Main
             return JsonConvert.DeserializeObject<List<Cache>>(System.IO.File.ReadAllText(directory));
         }
 
-        public static void BuildCache(string directory)
+        public static async Task BuildCache(string directory)
         {
-            var fileList = Directory.GetFiles(directory).Select(f => new FileInfo(f));
-            var cacheFileList = fileList
-                .Select(file => new Cache(file.Name, CalculateHash(file.FullName), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds())).ToList();
+            var fileList = Directory.GetFiles(directory, "*.*", System.IO.SearchOption.AllDirectories).Select(f => new FileInfo(f)).ToList();
+            List<Cache> cacheFileList = new List<Cache>();
+            int i = 0;
+
+            foreach (var file in fileList)
+            {
+                i++;
+                cacheFileList.Add(new Cache(file.FullName.Substring(directory.Length + 1).Replace(@"\", @"/"), await CalculateHash(file.FullName), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
+                MainWindow.UpdateLabel($"{i} / {fileList.Count()} - {(double)(100 * i) / fileList.Count():F3}%");
+                MainWindow.UpdateProgressBar((100 * i) / fileList.Count());
+            }
 
             System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache.json"), JsonConvert.SerializeObject(cacheFileList));
         }
@@ -82,9 +97,10 @@ namespace Main
 
             foreach (var file in cacheFileList)
             {
-                if (fileList.Keys.Contains(file.File) && file.LastModified != fileList[file.File])
+                if (fileList.Keys.Contains(file.File))
                 {
-                    returnList.Add(file);
+                    if (file.LastModified != fileList[file.File])
+                        returnList.Add(file);
                 }
                 else
                 {
