@@ -31,6 +31,24 @@ namespace Main
             });
         }
 
+        public static void EnableButtons()
+        {
+            Main.Dispatcher.Invoke(() =>
+            {
+                Main.launch_button.IsEnabled = true;
+                Main.enpatch_button.IsEnabled = true;
+            });
+        }
+
+        public static void DisableButtons()
+        {
+            Main.Dispatcher.Invoke(() =>
+            {
+                Main.launch_button.IsEnabled = false;
+                Main.enpatch_button.IsEnabled = false;
+            });
+        }
+
         public static void UpdateLabel(string content)
         {
             Main.Dispatcher.Invoke(() =>
@@ -52,11 +70,32 @@ namespace Main
                 dialog.InitialDirectory = "C:\\Users";
                 dialog.IsFolderPicker = true;
 
-                if (dialog.ShowDialog() == CommonFileDialogResult.Ok || dialog.FileName.EndsWith("pso2_bin"))
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
-                    _Settings.Pso2Path = dialog.FileName;
-                    _Settings.Save();
-                    MessageBox.Show("PSO2 path saved successfully.");
+                    if (dialog.FileName.EndsWith("pso2_bin"))
+                    {
+                        _Settings.Pso2Path = dialog.FileName;
+                        _Settings.Save();
+                        MessageBox.Show("PSO2 path saved successfully.");
+                    }
+                    else
+                    {
+                        var choice = MessageBox.Show($"Light Patcher will install PSO2 on the following folder: {dialog.FileName + @"\PHANTASYSTARONLINE2"}. Is that correct?", "Light Patcher", MessageBoxButton.YesNo);
+                        if (choice == MessageBoxResult.Yes)
+                        {
+                            Directory.CreateDirectory(dialog.FileName + @"\PHANTASYSTARONLINE2\pso2_bin");
+                            _Settings.Pso2Path = dialog.FileName + @"\PHANTASYSTARONLINE2\pso2_bin";
+                            _Settings.Save();
+
+                            MessageBox.Show("Downloading the necessary files. Please wait...");
+                            Task.Run(async() => await Download.GetPatchfiles());
+                        }
+                        else
+                        {
+                            MessageBox.Show("Process canceled.", "Light Patcher");
+                            Environment.Exit(0);
+                        }
+                    }
                 }
             }
 
@@ -65,9 +104,16 @@ namespace Main
                 MessageBox.Show("It seems this is your first time running Light Patcher. In order for it to work, " +
                                 "it needs to cache your PSO2 install, a process that might take a few minutes depending on your install. Please click OK to begin the caching process.");
 
-                //Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
+                Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
             }
-        }
+
+            // Checks and downloads missing / corrupt files
+            var files = Cache.ReturnMissingFiles("cache.json", _Settings.Pso2Path);
+            var downloadList = files["missingFiles"].Union(files["corruptFiles"]).ToList();
+
+            DisableButtons();
+            Download.GetFilesAsync(downloadList);
+}
 
         private void launch_button_Click(object sender, RoutedEventArgs e)
         {
@@ -81,6 +127,7 @@ namespace Main
                 var process = new Process();
                 process.StartInfo = info;
                 process.Start();
+                Application.Current.Shutdown();
             }
         }
 

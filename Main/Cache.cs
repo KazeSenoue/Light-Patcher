@@ -86,8 +86,9 @@ namespace Main
 
         public static async Task BuildCache(string directory)
         {
-            var fileList = Directory.GetFiles(directory, "*.*", System.IO.SearchOption.AllDirectories).Select(f => new FileInfo(f)).ToList();
+            var fileList = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories).Select(f => new FileInfo(f)).ToList();
             List<Cache> cacheFileList = new List<Cache>();
+            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagedump", ".bak" };
             int i = 0;
 
             foreach (var file in fileList)
@@ -95,9 +96,12 @@ namespace Main
                 i++;
                 var filename = file.FullName.Substring(directory.Length + 1);
 
-                using (var md5 = System.Security.Cryptography.MD5.Create())
+                if (!blacklist.Any(filename.Contains))
                 {
-                    cacheFileList.Add(new Cache(filename, await CalculateHash(file.FullName, md5), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
+                    using (var md5 = System.Security.Cryptography.MD5.Create())
+                    {
+                        cacheFileList.Add(new Cache(filename, await CalculateHash(file.FullName, md5), new DateTimeOffset(file.LastWriteTimeUtc).ToUnixTimeMilliseconds()));
+                    }
                 }
 
                 MainWindow.UpdateLabel($"{i} / {fileList.Count()} - {(double)(100 * i) / fileList.Count():F3}%");
@@ -119,8 +123,10 @@ namespace Main
             public int GetHashCode(Cache obj) => obj.LastModified.GetHashCode();
         }
 
-        public static string ReturnMissingFiles(string cache, string directory)
+        public static Dictionary<string, List<Cache>> ReturnMissingFiles(string cache, string directory)
         {
+            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagedump", ".bak" };
+
             //Beggining of file check
             using (var client = new WebClient())
             {
@@ -146,18 +152,20 @@ namespace Main
 
             List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", SearchOption.AllDirectories)
                 .Select(f => new FileInfo(f))
+                .Where(f => !blacklist.Any(f.FullName.Contains))
                 .Select(f => new Cache(f.FullName.Substring(_Settings.Pso2Path.Length + 1), null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
                 .ToList();
 
             List<Cache> localCache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5, i.LastModified)).ToList();
-            List<Cache> missingFiles = fileList.Except(localCache, new FileCacheEntryNameComparer()).ToList();
+            List<Cache> missingFiles = fileList.Except(localCache, new FileCacheEntryNameComparer())
+                .Where(f => !blacklist.Any(f.File.Contains))
+                .ToList();
 
             List<Cache> modifiedFiles = localFiles.Except(localCache, new FileCacheEntryLastModifiedComparer())
                 .ToList();
 
             List<Cache> corruptFiles = modifiedFiles.Where(e =>
             {
-                Debug.WriteLine(e.File);
                 using (var md5 = System.Security.Cryptography.MD5.Create())
                 using (var stream = new BufferedStream(System.IO.File.OpenRead(Path.Combine(_Settings.Pso2Path, e.File)), 1200000))
                 {
@@ -168,7 +176,11 @@ namespace Main
                 }
             }).ToList();
 
-            return "a";
+            return new Dictionary<string, List<Cache>>()
+            {
+                {"missingFiles", missingFiles},
+                {"corruptFiles", corruptFiles}
+            };
         }
     }
 }

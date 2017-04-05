@@ -22,14 +22,37 @@ namespace Main
 
         private async static Task GetFileAsync(string url, string location, int i, int total)
         {
-            if (url.Contains(@"win32"))
-                url = url + ".pat";
+            Debug.WriteLine(url);
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    client.DownloadFileCompleted += delegate (object sender, AsyncCompletedEventArgs e) { client_DownloadFileCompleted(sender, e, location, i, total); };
+                    client.Headers.Add("User-Agent", "AQUA_HTTP");
+                    await client.DownloadFileTaskAsync(new Uri(url), location);
+                }
+            }
+            catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw;
+            }
+        }
 
+        public static async Task GetPatchfiles()
+        {
             using (var client = new WebClient())
             {
-                client.DownloadFileCompleted += delegate (object sender, AsyncCompletedEventArgs e) { client_DownloadFileCompleted(sender, e, location, i, total); };
                 client.Headers.Add("User-Agent", "AQUA_HTTP");
-                await client.DownloadFileTaskAsync(new Uri(url), location);
+                var launcherFiles = await client.DownloadStringTaskAsync(new Uri("http://download.pso2.jp/patch_prod/patches/launcherlist.txt"));
+                
+                foreach (var file in launcherFiles.Split('\n'))
+                {
+                    var newFile = file.Split();
+
+                    client.Headers.Add("User-Agent", "AQUA_HTTP");
+                    await client.DownloadFileTaskAsync(new Uri(newFile[0]), Path.Combine(_Settings.Pso2Path, newFile[0].Replace(".pat", "")));
+                    await Cache.UpdateCache(_Settings.Pso2Path, newFile[0].Replace(".pat", ""));
+                }
             }
         }
 
@@ -42,8 +65,19 @@ namespace Main
             foreach (var file in list)
             {
                 i++;
-                await GetFileAsync(Path.Combine(baseURL, file.File + ".pat"), Path.Combine(_Settings.Pso2Path, file.File), i, list.Count);
+                try
+                {
+                    await GetFileAsync(Path.Combine(baseURL, file.File + ".pat"), Path.Combine(_Settings.Pso2Path, file.File), i, list.Count);
+                }
+                catch (WebException ex) when ((ex.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
+                {
+                    var baseURLOld = "http://download.pso2.jp/patch_prod/patches_old/";
+                    await GetFileAsync(Path.Combine(baseURLOld, file.File + ".pat"), Path.Combine(_Settings.Pso2Path, file.File), i, list.Count);
+                }
             }
+
+            MainWindow.EnableButtons();
+            MainWindow.UpdateLabel("Successful!");
         }
     }
 }
