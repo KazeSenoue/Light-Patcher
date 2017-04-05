@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using SharpCompress.Readers;
 using System.ComponentModel;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Main
 {
@@ -19,20 +20,8 @@ namespace Main
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Settings _Settings = new Settings().ReturnSettings();
+        private Properties.Settings _Settings = Properties.Settings.Default;
         public static MainWindow Main;
-
-        class FileCacheEntryNameComparer : IEqualityComparer<Cache>
-        {
-            public bool Equals(Cache x, Cache y) => x.File == y.File;
-            public int GetHashCode(Cache obj) => obj.File.GetHashCode();
-        }
-
-        class FileCacheEntryLastModifiedComparer : IEqualityComparer<Cache>
-        {
-            public bool Equals(Cache x, Cache y) => x.LastModified == y.LastModified;
-            public int GetHashCode(Cache obj) => obj.LastModified.GetHashCode();
-        }
 
         public static void UpdateProgressBar(double value)
         {
@@ -55,67 +44,34 @@ namespace Main
             InitializeComponent();
             Main = this;
 
+            if (_Settings.Pso2Path == "")
+            {
+                MessageBox.Show("Your PSO2 path is empty or invalid. Please select your \"pso2_bin\" folder.");
+
+                CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+                dialog.InitialDirectory = "C:\\Users";
+                dialog.IsFolderPicker = true;
+
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok || dialog.FileName.EndsWith("pso2_bin"))
+                {
+                    _Settings.Pso2Path = dialog.FileName;
+                    _Settings.Save();
+                    MessageBox.Show("PSO2 path saved successfully.");
+                }
+            }
+
             if (!File.Exists("cache.json"))
             {
                 MessageBox.Show("It seems this is your first time running Light Patcher. In order for it to work, " +
                                 "it needs to cache your PSO2 install, a process that might take a few minutes depending on your install. Please click OK to begin the caching process.");
 
-                Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
-            }
-
-            Debug.WriteLine(Path.Combine(_Settings.Pso2Path, @"damagelogs\1477699228.csv"));
-
-            if (File.Exists("cache.json"))
-            {
-                //Beggining of file check
-                using (var client = new WebClient())
-                {
-                    if (!Directory.Exists("Temp"))
-                        Directory.CreateDirectory("Temp");
-
-                    client.Headers.Add("User-Agent", "AQUA_HTTP");
-                    client.DownloadFile("http://download.pso2.jp/patch_prod/patches/patchlist.txt", "Temp/patchlist_old.txt");
-
-                    client.Headers.Add("User-Agent", "AQUA_HTTP");
-                    client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist.txt");
-                }
-
-                List<Cache> fileList = File.ReadAllLines("Temp/patchlist_old.txt").Concat(File.ReadAllLines("Temp/patchlist.txt"))
-                    .Select(f => new Cache(f.Split()[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split()[2]))
-                    .ToList();
-                
-                List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", SearchOption.AllDirectories)
-                    .Select(f => new FileInfo(f))
-                    .Select(f => new Cache(f.FullName.Substring(_Settings.Pso2Path.Length+1), null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
-                    .ToList();
-
-                List<Cache> cache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5)).ToList();
-                List<Cache> missingFiles = fileList.Except(cache, new FileCacheEntryNameComparer()).ToList();
-                List<Cache> modifiedFiles = cache.Except(fileList, new FileCacheEntryLastModifiedComparer())
-                    .Except(missingFiles, new FileCacheEntryNameComparer())
-                    .ToList();
-
-                List<Cache> corruptFiles = modifiedFiles.Where(e =>
-                {
-                    Debug.WriteLine(e.File);
-                    using (var md5 = System.Security.Cryptography.MD5.Create())
-                    using (var stream = new BufferedStream(File.OpenRead(Path.Combine(_Settings.Pso2Path, e.File)), 1200000))
-                    {
-                        var hash = md5.ComputeHash(stream);
-                        var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
-
-                        return fileMD5 != e.MD5;
-                    }
-                }).ToList();
-
-                if (missingFiles.Count() > 0)
-                    MessageBox.Show($"Missing files: {missingFiles.Count().ToString()}\nCorrupt files: {corruptFiles.Count().ToString()}");
+                //Task.Run(async () => { await Cache.BuildCache(_Settings.Pso2Path); });
             }
         }
 
         private void launch_button_Click(object sender, RoutedEventArgs e)
         {
-            if (System.IO.File.Exists(_Settings.Pso2Path + "/pso2.exe"))
+            if (File.Exists(_Settings.Pso2Path + "/pso2.exe"))
             {
                 var info = new ProcessStartInfo(_Settings.Pso2Path + "/pso2.exe");
                 info.EnvironmentVariables.Add("-pso2", "+0x01e3f1e9");
@@ -137,44 +93,6 @@ namespace Main
             }
         }
 
-        public async Task GetFileAsync(string uri, string location)
-        {
-            using (var client = new WebClient())
-            {
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
-                client.DownloadFileCompleted += delegate (object sender, AsyncCompletedEventArgs e) { client_DownloadFileCompleted(sender, e, uri.ToString()); };
-
-                client.DownloadFileAsync(new Uri(uri), Path.Combine(location, Path.GetFileName(uri)));
-            }
-        }
-
-        void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-
-            progress_bar.Value = int.Parse(Math.Truncate(percentage).ToString());
-        }
-
-        void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e, string uri)
-        {
-            using (var archive = SharpCompress.Archives.Zip.ZipArchive.Open(Path.Combine("Temp/", Path.GetFileName(uri))))
-            {
-                foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
-                {
-                    entry.WriteToDirectory(Path.Combine(_Settings.Pso2Path, @"data/win32"), new ExtractionOptions()
-                    {
-                        ExtractFullPath = true,
-                        Overwrite = true
-                    });
-                }
-            }
-
-            Directory.Delete("Temp", true);
-            pb_label.Content = "Success!";
-        }
-
         private async void enpatch_button_Click(object sender, RoutedEventArgs e)
         {
             pb_label.Content = "Installing english patch...";
@@ -187,12 +105,12 @@ namespace Main
 
             string fileUrl = baseUrl + file;
             Directory.CreateDirectory("Temp");
-            await GetFileAsync(fileUrl, Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
+            //await GetFileAsync(fileUrl, Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            var file = System.IO.File.ReadAllText(@"C:\Users\Rodrigo\Documents\SEGA\PHANTASYSTARONLINE2\user.pso2");
+            var file = File.ReadAllText(@"C:\Users\Rodrigo\Documents\SEGA\PHANTASYSTARONLINE2\user.pso2");
             var regex = @"\s*(.*)\s=\s([^{,]*),?$";
         }
     }

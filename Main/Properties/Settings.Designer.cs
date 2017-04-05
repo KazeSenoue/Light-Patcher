@@ -22,5 +22,17 @@ namespace Main.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Pso2Path {
+            get {
+                return ((string)(this["Pso2Path"]));
+            }
+            set {
+                this["Pso2Path"] = value;
+            }
+        }
     }
 }
