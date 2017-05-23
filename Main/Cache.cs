@@ -88,7 +88,7 @@ namespace Main
         {
             var fileList = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories).Select(f => new FileInfo(f)).ToList();
             List<Cache> cacheFileList = new List<Cache>();
-            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagedump", ".bak" };
+            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagedump", ".bak", "tweaker", "gameversion", "pso2h", "titles", "translation", ".bat", ".json" };
             int i = 0;
 
             foreach (var file in fileList)
@@ -109,6 +109,8 @@ namespace Main
             }
 
             System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "cache.json"), JsonConvert.SerializeObject(cacheFileList));
+            Process.Start(System.Windows.Application.ResourceAssembly.Location);
+            System.Windows.Application.Current.Shutdown();
         }
 
         class FileCacheEntryNameComparer : IEqualityComparer<Cache>
@@ -123,9 +125,9 @@ namespace Main
             public int GetHashCode(Cache obj) => obj.LastModified.GetHashCode();
         }
 
-        public static Dictionary<string, List<Cache>> ReturnMissingFiles(string cache, string directory)
+        public static Dictionary<string, List<Cache>> ReturnMissingFiles()
         {
-            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagedump", ".bak" };
+            List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagelogs", ".bak", "tweaker", "gameversion", "pso2h", "titles", "translation", ".bat", ".json" };
 
             //Beggining of file check
             using (var client = new WebClient())
@@ -134,10 +136,13 @@ namespace Main
                     Directory.CreateDirectory("Temp");
 
                 client.Headers.Add("User-Agent", "AQUA_HTTP");
-                client.DownloadFile("http://download.pso2.jp/patch_prod/patches/patchlist.txt", "Temp/patchlist.txt");
+                List<Cache> patchListStr = client.DownloadString("http://download.pso2.jp/patch_prod/patches/patchlist.txt")
+                    .Split(new[] { "\r\n" }, StringSplitOptions.None)
+                    .Select(f => new Cache(f.Split('\t')[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split('\t')[2]))
+                    .ToList();
 
                 client.Headers.Add("User-Agent", "AQUA_HTTP");
-                client.DownloadFile("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt", "Temp/patchlist_old.txt");
+                var patchListStr_old = client.DownloadString("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt");
             }
 
             List<Cache> patchList = System.IO.File.ReadAllLines("Temp/patchlist.txt")
@@ -157,7 +162,7 @@ namespace Main
                 .ToList();
 
             List<Cache> localCache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5, i.LastModified)).ToList();
-            List<Cache> missingFiles = fileList.Except(localCache, new FileCacheEntryNameComparer())
+            List<Cache> missingFiles = fileList.Except(localFiles, new FileCacheEntryNameComparer())
                 .Where(f => !blacklist.Any(f.File.Contains))
                 .ToList();
 
