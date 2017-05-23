@@ -1,16 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
-using System.Net;
-using SharpCompress.Archives;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using SharpCompress.Readers;
-using System.ComponentModel;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Main
@@ -88,7 +84,7 @@ namespace Main
                             _Settings.Save();
 
                             MessageBox.Show("Downloading the necessary files. Please wait...");
-                            Task.Run(async() => await Download.GetPatchfiles());
+                            Task.Run(async () => await Download.GetPatchfiles());
                         }
                         else
                         {
@@ -113,7 +109,7 @@ namespace Main
 
             DisableButtons();
             Download.GetFilesAsync(downloadList);
-}
+        }
 
         private void launch_button_Click(object sender, RoutedEventArgs e)
         {
@@ -142,17 +138,23 @@ namespace Main
 
         private async void enpatch_button_Click(object sender, RoutedEventArgs e)
         {
+            DisableButtons();
+            if (!File.Exists("patch_cache.json"))
+            {
+                File.WriteAllText("patch_cache.json", "[]");
+            }
             pb_label.Content = "Installing english patch...";
 
-            string url = "https://pitchblack.arghlex.net/pso2/?sort=modtime&order=desc&json";
+            string url = "https://pso2.arghlex.net/pso2/?sort=modtime&order=desc&json";
             string baseUrl = "https://pso2.arghlex.net/pso2/";
 
-            var json = await GetDictAsync(url);
-            var file = json["files"][0]["name"];
+            var fileUrl = baseUrl + (await GetDictAsync(url))["files"][0]["name"];
 
-            string fileUrl = baseUrl + file;
             Directory.CreateDirectory("Temp");
-            //await GetFileAsync(fileUrl, Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
+            await Download.GetEnglishPatch(fileUrl);
+            Directory.Delete("Temp", true);
+            pb_label.Content = "Successful!";
+            EnableButtons();
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
