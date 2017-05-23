@@ -87,6 +87,7 @@
     </ApplicationDefinition>
     <Compile Include="Cache.cs" />
     <Compile Include="Download.cs" />
+    <Compile Include="Pso2Settings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
