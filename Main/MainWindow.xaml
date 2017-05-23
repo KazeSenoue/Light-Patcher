@@ -13,8 +13,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="launch_button" Content="Launch PSO2" HorizontalAlignment="Left" Margin="79,54,0,0" VerticalAlignment="Top" Width="126" Click="launch_button_Click" Height="26"/>
-        <Button x:Name="enpatch_button" Content="Install English Patch" HorizontalAlignment="Left" Margin="79,85,0,0" VerticalAlignment="Top" Width="126" Click="enpatch_button_Click"/>
+        <Button x:Name="launch_button" Content="Launch PSO2" HorizontalAlignment="Left" Margin="79,54,0,0" VerticalAlignment="Top" Width="126" Click="Launch_button_Click" Height="26"/>
+        <Button x:Name="enpatch_button" Content="Install English Patch" HorizontalAlignment="Left" Margin="79,85,0,0" VerticalAlignment="Top" Width="126" Click="Enpatch_button_Click"/>
         <ProgressBar x:Name="progress_bar" HorizontalAlignment="Left" Height="24" Margin="79,207,0,0" VerticalAlignment="Top" Width="336"/>
         <Label x:Name="pb_label" Content="Idle" HorizontalContentAlignment="Center" Margin="0,180,0,0" VerticalAlignment="Top" Height="31"/>
         <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="289,54,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>

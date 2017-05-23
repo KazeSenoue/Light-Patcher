@@ -111,7 +111,7 @@ namespace Main
             Download.GetFilesAsync(downloadList);
         }
 
-        private void launch_button_Click(object sender, RoutedEventArgs e)
+        private void Launch_button_Click(object sender, RoutedEventArgs e)
         {
             if (File.Exists(_Settings.Pso2Path + "/pso2.exe"))
             {
@@ -136,7 +136,7 @@ namespace Main
             }
         }
 
-        private async void enpatch_button_Click(object sender, RoutedEventArgs e)
+        private async void Enpatch_button_Click(object sender, RoutedEventArgs e)
         {
             DisableButtons();
             if (!File.Exists("patch_cache.json"))
