@@ -130,62 +130,69 @@ namespace Main
             List<string> blacklist = new List<string>() { "GameGuard", "plugins", "damagelogs", ".bak", "tweaker", "gameversion", "pso2h", "titles", "translation", ".bat", ".json" };
 
             //Beggining of file check
+
             using (var client = new WebClient())
             {
                 if (!Directory.Exists("Temp"))
                     Directory.CreateDirectory("Temp");
 
                 client.Headers.Add("User-Agent", "AQUA_HTTP");
-                List<Cache> patchListStr = client.DownloadString("http://download.pso2.jp/patch_prod/patches/patchlist.txt")
+                var patchListStr = client.DownloadString("http://download.pso2.jp/patch_prod/patches/patchlist.txt")
                     .Split(new[] { "\r\n" }, StringSplitOptions.None)
-                    .Select(f => new Cache(f.Split('\t')[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split('\t')[2]))
-                    .ToList();
+                    .Select(item => item.Split())
+                    .ToList()
+                    .Where(f => f.Length == 3);
 
                 client.Headers.Add("User-Agent", "AQUA_HTTP");
-                var patchListStr_old = client.DownloadString("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt");
-            }
+                var patchListStr_old = client.DownloadString("http://download.pso2.jp/patch_prod/patches_old/patchlist.txt")
+                    .Split(new[] { "\n" }, StringSplitOptions.None)
+                    .Select(item => item.Split())
+                    .ToList()
+                    .Where(f => f.Length == 3);
 
-            List<Cache> patchList = System.IO.File.ReadAllLines("Temp/patchlist.txt")
-                .Select(f => new Cache(f.Split()[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split()[2]))
-                .ToList();
+                List<Cache> patchList = patchListStr
+                    .Select(f => new Cache(f[0].Replace(@"/", @"\").Replace(".pat", ""), f[2]))
+                    .ToList();
 
-            List<Cache> patchListOld = System.IO.File.ReadAllLines("Temp/patchlist_old.txt")
-                .Select(f => new Cache(f.Split()[0].Replace(@"/", @"\").Replace(".pat", ""), f.Split()[2]))
-                .ToList();
+                List<Cache> patchListOld = patchListStr_old
+                    .Select(f => new Cache(f[0].Replace(@"/", @"\").Replace(".pat", ""), f[2]))
+                    .ToList();
 
-            List<Cache> fileList = patchList.Union(patchListOld.Except(patchList, new FileCacheEntryNameComparer())).ToList();
+                List<Cache> fileList = patchList.Union(patchListOld.Except(patchList, new FileCacheEntryNameComparer())).ToList();
 
-            List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", SearchOption.AllDirectories)
-                .Select(f => new FileInfo(f))
-                .Where(f => !blacklist.Any(f.FullName.Contains))
-                .Select(f => new Cache(f.FullName.Substring(_Settings.Pso2Path.Length + 1), null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
-                .ToList();
+                List<Cache> localFiles = Directory.GetFiles(_Settings.Pso2Path, "*.*", SearchOption.AllDirectories)
+                    .Select(f => new FileInfo(f))
+                    .Where(f => !blacklist.Any(f.FullName.Contains))
+                    .Select(f => new Cache(f.FullName.Substring(_Settings.Pso2Path.Length + 1), null, new DateTimeOffset(f.LastWriteTimeUtc).ToUnixTimeMilliseconds()))
+                    .ToList();
 
-            List<Cache> localCache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5, i.LastModified)).ToList();
-            List<Cache> missingFiles = fileList.Except(localFiles, new FileCacheEntryNameComparer())
-                .Where(f => !blacklist.Any(f.File.Contains))
-                .ToList();
+                List<Cache> localCache = Cache.ReadCache("cache.json").Select(i => new Cache(i.File, i.MD5, i.LastModified)).ToList();
+                List<Cache> missingFiles = fileList.Except(localFiles, new FileCacheEntryNameComparer())
+                    .Where(f => !blacklist.Any(f.File.Contains))
+                    .ToList();
 
-            List<Cache> modifiedFiles = localFiles.Except(localCache, new FileCacheEntryLastModifiedComparer())
-                .ToList();
+                List<Cache> modifiedFiles = localFiles.Except(localCache, new FileCacheEntryLastModifiedComparer())
+                    .ToList();
 
-            List<Cache> corruptFiles = modifiedFiles.Where(e =>
-            {
-                using (var md5 = System.Security.Cryptography.MD5.Create())
-                using (var stream = new BufferedStream(System.IO.File.OpenRead(Path.Combine(_Settings.Pso2Path, e.File)), 1200000))
+                List<Cache> corruptFiles = modifiedFiles.Where(e =>
                 {
-                    var hash = md5.ComputeHash(stream);
-                    var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
+                    using (var md5 = System.Security.Cryptography.MD5.Create())
+                    using (var stream = new BufferedStream(System.IO.File.OpenRead(Path.Combine(_Settings.Pso2Path, e.File)), 1200000))
+                    {
+                        var hash = md5.ComputeHash(stream);
+                        var fileMD5 = string.Concat(Array.ConvertAll(hash, x => x.ToString("X2")));
 
-                    return fileMD5 != e.MD5;
-                }
-            }).ToList();
+                        return fileMD5 != e.MD5;
+                    }
+                }).ToList();
 
-            return new Dictionary<string, List<Cache>>()
-            {
-                {"missingFiles", missingFiles},
-                {"corruptFiles", corruptFiles}
-            };
+                Debug.WriteLine("returning");
+                return new Dictionary<string, List<Cache>>()
+                {
+                    {"missingFiles", missingFiles},
+                    {"corruptFiles", corruptFiles}
+                };
+            }
         }
     }
 }

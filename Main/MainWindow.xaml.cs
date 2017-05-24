@@ -104,7 +104,7 @@ namespace Main
             }
 
             // Checks and downloads missing / corrupt files
-            var files = Cache.ReturnMissingFiles("cache.json", _Settings.Pso2Path);
+            var files = Cache.ReturnMissingFiles();
             var downloadList = files["missingFiles"].Union(files["corruptFiles"]).ToList();
 
             DisableButtons();
